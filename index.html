@@ -204,7 +204,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Responsive tweaks */
         @media (max-width: 400px) {
             .header h1 { font-size: 1.4rem; }
             .card { padding: 20px 16px; }
@@ -261,8 +260,8 @@
 <script>
     const API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
 
-    let rate = null;          // COP per 1 USD
-    let direction = 'COP_USD'; // or 'USD_COP'
+    let rate = null;
+    let direction = 'COP_USD';
 
     const fromInput  = document.getElementById('from-input');
     const toInput    = document.getElementById('to-input');
@@ -277,7 +276,6 @@
     const resultLbl  = document.getElementById('result-label');
     const errorMsg   = document.getElementById('error-msg');
 
-    // ---------- Fetch rate ----------
     async function fetchRate() {
         try {
             const res = await fetch(API_URL);
@@ -285,19 +283,18 @@
             const data = await res.json();
             rate = data.rates.COP;
 
-            liveRate.textContent = `1 USD = ${formatNumber(rate, 2)} COP`;
+            liveRate.textContent = '1 USD = ' + formatNumber(rate, 2) + ' COP';
             const now = new Date();
-            updatedEl.textContent = `Updated ${now.toLocaleString()}`;
+            updatedEl.textContent = 'Updated ' + now.toLocaleString();
             errorMsg.style.display = 'none';
 
-            convert(); // recalc with fresh rate
+            convert();
         } catch (e) {
             liveRate.textContent = 'Unavailable';
             showError('Could not fetch live rate. Check your internet connection.');
         }
     }
 
-    // ---------- Format numbers ----------
     function formatNumber(n, decimals) {
         return n.toLocaleString('en-US', {
             minimumFractionDigits: decimals,
@@ -306,11 +303,9 @@
     }
 
     function parseInput(val) {
-        // Remove commas and whitespace
         return parseFloat(val.replace(/[^0-9.\-]/g, ''));
     }
 
-    // ---------- Convert ----------
     function convert(source) {
         if (!rate) return;
 
@@ -320,15 +315,14 @@
 
             let result;
             if (direction === 'COP_USD') {
-                // "to" is USD → convert back to COP for "from"
                 result = val * rate;
                 fromInput.value = formatNumber(result, 0);
-                resultVal.textContent = `$${formatNumber(val, 2)} USD`;
+                resultVal.textContent = '$' + formatNumber(val, 2) + ' USD';
                 resultLbl.textContent = 'US Dollars';
             } else {
                 result = val / rate;
                 fromInput.value = formatNumber(result, 2);
-                resultVal.textContent = `$${formatNumber(val, 0)} COP`;
+                resultVal.textContent = '$' + formatNumber(val, 0) + ' COP';
                 resultLbl.textContent = 'Colombian Pesos';
             }
         } else {
@@ -339,18 +333,17 @@
             if (direction === 'COP_USD') {
                 result = val / rate;
                 toInput.value = formatNumber(result, 2);
-                resultVal.textContent = `$${formatNumber(result, 2)} USD`;
+                resultVal.textContent = '$' + formatNumber(result, 2) + ' USD';
                 resultLbl.textContent = 'US Dollars';
             } else {
                 result = val * rate;
                 toInput.value = formatNumber(result, 0);
-                resultVal.textContent = `$${formatNumber(result, 0)} COP�;
+                resultVal.textContent = '$' + formatNumber(result, 0) + ' COP';
                 resultLbl.textContent = 'Colombian Pesos';
             }
         }
     }
 
-    // ---------- Swap ----------
     swapBtn.addEventListener('click', () => {
         direction = direction === 'COP_USD' ? 'USD_COP' : 'COP_USD';
 
@@ -366,7 +359,6 @@
             toGroup.querySelector('.flag').textContent   = '🇨🇴';
         }
 
-        // Swap input values
         const temp = fromInput.value;
         fromInput.value = toInput.value;
         toInput.value = temp;
@@ -374,26 +366,16 @@
         convert('from');
     });
 
-    // ---------- Input listeners ----------
     fromInput.addEventListener('input', () => convert('from'));
     toInput.addEventListener('input', () => convert('to'));
 
-    // ---------- Error display ----------
     function showError(msg) {
         errorMsg.textContent = msg;
         errorMsg.style.display = 'block';
     }
 
-    // ---------- Init ----------
     fetchRate();
-
-    // Refresh rate every 30 minutes
     setInterval(fetchRate, 30 * 60 * 1000);
-
-    // ---------- PWA Registration ----------
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
 </script>
 
 </body>
