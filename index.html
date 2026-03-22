@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COP ↔ USD Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>COP â USD Calculator</title>
     <meta name="description" content="Convert Colombian Pesos to US Dollars with live exchange rates">
     <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon-192.png" type="image/png">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,11 +19,15 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: #fff;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .container {
@@ -74,12 +80,29 @@
             margin-top: 4px;
         }
 
+        .offline-badge {
+            display: inline-block;
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            color: #ffc107;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
+
+        .offline-badge.hidden { display: none; }
+
         .card {
             background: rgba(255,255,255,0.06);
             border-radius: 20px;
             padding: 28px 24px;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .input-group {
@@ -113,6 +136,7 @@
             color: #fff;
             outline: none;
             transition: border-color 0.2s;
+            -webkit-appearance: none;
         }
 
         .input-group input:focus {
@@ -139,7 +163,7 @@
             color: #fff;
         }
 
-        .swap-btn:hover {
+        .swap-btn:hover, .swap-btn:active {
             background: #00d4aa;
             border-color: #00d4aa;
             transform: rotate(180deg);
@@ -204,6 +228,29 @@
             to { transform: rotate(360deg); }
         }
 
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00d4aa;
+            color: #1a1a2e;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 212, 170, 0.4);
+            z-index: 100;
+            display: none;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .install-prompt:active {
+            transform: translateX(-50%) scale(0.96);
+        }
+
         @media (max-width: 400px) {
             .header h1 { font-size: 1.4rem; }
             .card { padding: 20px 16px; }
@@ -215,85 +262,143 @@
             .header h1 { font-size: 2.2rem; }
             .rate-banner .rate { font-size: 1.6rem; }
         }
+
+        @media (display-mode: standalone) {
+            body { padding-top: calc(env(safe-area-inset-top, 20px) + 10px); }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="flags">🇨🇴 🇺🇸</div>
-        <h1>COP ↔ USD</h1>
+        <div class="flags">&#127464;&#127476; &#127482;&#127480;</div>
+        <h1>COP &#8596; USD</h1>
     </div>
 
     <div class="rate-banner">
         <div class="label">Live Exchange Rate</div>
         <div class="rate" id="liverate">Loading... <span class="loading-spinner"></span></div>
         <div class="updated" id="updated"></div>
+        <div class="offline-badge hidden" id="offline-badge">Using saved rate</div>
     </div>
 
     <div class="card">
         <div class="input-group" id="from-group">
-            <label><span class="flag">🇨🇴</span> <span id="from-label">Colombian Pesos (COP)</span></label>
+            <label><span class="flag">&#127464;&#127476;</span> <span id="from-label">Colombian Pesos (COP)</span></label>
             <input type="text" id="from-input" inputmode="decimal" placeholder="0" autocomplete="off">
         </div>
 
-        <button class="swap-btn" id="swap-btn" title="Swap currencies">⇅</button>
+        <button class="swap-btn" id="swap-btn" title="Swap currencies">&#8693;</button>
 
         <div class="input-group" id="to-group">
-            <label><span class="flag">🇺🇸</span> <span id="to-label">US Dollars (USD)</span></label>
+            <label><span class="flag">&#127482;&#127480;</span> <span id="to-label">US Dollars (USD)</span></label>
             <input type="text" id="to-input" inputmode="decimal" placeholder="0" autocomplete="off">
         </div>
 
         <div class="result-display">
             <div class="result-label" id="result-label">Converted Amount</div>
-            <div class="result-value" id="result-value">—</div>
+            <div class="result-value" id="result-value">&#8212;</div>
         </div>
 
         <div class="error-msg" id="error-msg"></div>
     </div>
 
     <div class="footer">
-        Rates from ExchangeRate API · Updates daily
+        Rates from ExchangeRate API &middot; Updates every 30 min
     </div>
 </div>
 
+<button class="install-prompt" id="install-btn">&#9889; Install App</button>
+
 <script>
-    const API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+    var API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+    var STORAGE_KEY = 'cop_usd_saved_rate';
 
-    let rate = null;
-    let direction = 'COP_USD';
+    var rate = null;
+    var direction = 'COP_USD';
+    var isOfflineRate = false;
 
-    const fromInput  = document.getElementById('from-input');
-    const toInput    = document.getElementById('to-input');
-    const fromLabel  = document.getElementById('from-label');
-    const toLabel    = document.getElementById('to-label');
-    const fromGroup  = document.getElementById('from-group');
-    const toGroup    = document.getElementById('to-group');
-    const swapBtn    = document.getElementById('swap-btn');
-    const liveRate   = document.getElementById('liverate');
-    const updatedEl  = document.getElementById('updated');
-    const resultVal  = document.getElementById('result-value');
-    const resultLbl  = document.getElementById('result-label');
-    const errorMsg   = document.getElementById('error-msg');
+    var fromInput  = document.getElementById('from-input');
+    var toInput    = document.getElementById('to-input');
+    var fromLabel  = document.getElementById('from-label');
+    var toLabel    = document.getElementById('to-label');
+    var fromGroup  = document.getElementById('from-group');
+    var toGroup    = document.getElementById('to-group');
+    var swapBtn    = document.getElementById('swap-btn');
+    var liveRate   = document.getElementById('liverate');
+    var updatedEl  = document.getElementById('updated');
+    var resultVal  = document.getElementById('result-value');
+    var resultLbl  = document.getElementById('result-label');
+    var errorMsg   = document.getElementById('error-msg');
+    var offlineBadge = document.getElementById('offline-badge');
+    var installBtn = document.getElementById('install-btn');
 
-    async function fetchRate() {
+    /* ---------- Saved Rate (localStorage) ---------- */
+
+    function saveRate(copRate) {
+        var data = {
+            rate: copRate,
+            timestamp: new Date().toISOString()
+        };
         try {
-            const res = await fetch(API_URL);
-            if (!res.ok) throw new Error('API error');
-            const data = await res.json();
-            rate = data.rates.COP;
-
-            liveRate.textContent = '1 USD = ' + formatNumber(rate, 2) + ' COP';
-            const now = new Date();
-            updatedEl.textContent = 'Updated ' + now.toLocaleString();
-            errorMsg.style.display = 'none';
-
-            convert();
-        } catch (e) {
-            liveRate.textContent = 'Unavailable';
-            showError('Could not fetch live rate. Check your internet connection.');
-        }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) { /* storage full or unavailable */ }
     }
+
+    function loadSavedRate() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (e) { return null; }
+    }
+
+    /* ---------- Fetch Live Rate ---------- */
+
+    function fetchRate() {
+        fetch(API_URL)
+            .then(function(res) {
+                if (!res.ok) throw new Error('API error');
+                return res.json();
+            })
+            .then(function(data) {
+                rate = data.rates.COP;
+
+                // Save to localStorage for offline use
+                saveRate(rate);
+                isOfflineRate = false;
+
+                liveRate.textContent = '1 USD = ' + formatNumber(rate, 2) + ' COP';
+                var now = new Date();
+                updatedEl.textContent = 'Updated ' + now.toLocaleString();
+                offlineBadge.classList.add('hidden');
+                errorMsg.style.display = 'none';
+
+                convert();
+            })
+            .catch(function() {
+                // Try loading the saved rate
+                var saved = loadSavedRate();
+                if (saved && saved.rate) {
+                    rate = saved.rate;
+                    isOfflineRate = true;
+
+                    liveRate.textContent = '1 USD = ' + formatNumber(rate, 2) + ' COP';
+                    var savedDate = new Date(saved.timestamp);
+                    updatedEl.textContent = 'Saved ' + savedDate.toLocaleString();
+                    offlineBadge.classList.remove('hidden');
+                    errorMsg.style.display = 'none';
+
+                    convert();
+                } else {
+                    liveRate.textContent = 'Unavailable';
+                    showError('No internet and no saved rate. Connect once to cache the rate.');
+                }
+            });
+    }
+
+    /* ---------- Formatting ---------- */
 
     function formatNumber(n, decimals) {
         return n.toLocaleString('en-US', {
@@ -306,14 +411,16 @@
         return parseFloat(val.replace(/[^0-9.\-]/g, ''));
     }
 
+    /* ---------- Conversion ---------- */
+
     function convert(source) {
         if (!rate) return;
 
         if (source === 'to') {
-            const val = parseInput(toInput.value);
-            if (isNaN(val)) { resultVal.textContent = '—'; return; }
+            var val = parseInput(toInput.value);
+            if (isNaN(val)) { resultVal.innerHTML = '&#8212;'; return; }
 
-            let result;
+            var result;
             if (direction === 'COP_USD') {
                 result = val * rate;
                 fromInput.value = formatNumber(result, 0);
@@ -326,53 +433,98 @@
                 resultLbl.textContent = 'Colombian Pesos';
             }
         } else {
-            const val = parseInput(fromInput.value);
-            if (isNaN(val)) { resultVal.textContent = '—'; return; }
+            var val2 = parseInput(fromInput.value);
+            if (isNaN(val2)) { resultVal.innerHTML = '&#8212;'; return; }
 
-            let result;
+            var result2;
             if (direction === 'COP_USD') {
-                result = val / rate;
-                toInput.value = formatNumber(result, 2);
-                resultVal.textContent = '$' + formatNumber(result, 2) + ' USD';
+                result2 = val2 / rate;
+                toInput.value = formatNumber(result2, 2);
+                resultVal.textContent = '$' + formatNumber(result2, 2) + ' USD';
                 resultLbl.textContent = 'US Dollars';
             } else {
-                result = val * rate;
-                toInput.value = formatNumber(result, 0);
-                resultVal.textContent = '$' + formatNumber(result, 0) + ' COP';
+                result2 = val2 * rate;
+                toInput.value = formatNumber(result2, 0);
+                resultVal.textContent = '$' + formatNumber(result2, 0) + ' COP';
                 resultLbl.textContent = 'Colombian Pesos';
             }
         }
     }
 
-    swapBtn.addEventListener('click', () => {
+    /* ---------- Swap ---------- */
+
+    swapBtn.addEventListener('click', function() {
         direction = direction === 'COP_USD' ? 'USD_COP' : 'COP_USD';
 
         if (direction === 'COP_USD') {
             fromLabel.textContent = 'Colombian Pesos (COP)';
             toLabel.textContent   = 'US Dollars (USD)';
-            fromGroup.querySelector('.flag').textContent = '🇨🇴';
-            toGroup.querySelector('.flag').textContent   = '🇺🇸';
+            fromGroup.querySelector('.flag').innerHTML = '&#127464;&#127476;';
+            toGroup.querySelector('.flag').innerHTML   = '&#127482;&#127480;';
         } else {
             fromLabel.textContent = 'US Dollars (USD)';
             toLabel.textContent   = 'Colombian Pesos (COP)';
-            fromGroup.querySelector('.flag').textContent = '🇺🇸';
-            toGroup.querySelector('.flag').textContent   = '🇨🇴';
+            fromGroup.querySelector('.flag').innerHTML = '&#127482;&#127480;';
+            toGroup.querySelector('.flag').innerHTML   = '&#127464;&#127476;';
         }
 
-        const temp = fromInput.value;
+        var temp = fromInput.value;
         fromInput.value = toInput.value;
         toInput.value = temp;
 
         convert('from');
     });
 
-    fromInput.addEventListener('input', () => convert('from'));
-    toInput.addEventListener('input', () => convert('to'));
+    fromInput.addEventListener('input', function() { convert('from'); });
+    toInput.addEventListener('input', function() { convert('to'); });
 
     function showError(msg) {
         errorMsg.textContent = msg;
         errorMsg.style.display = 'block';
     }
+
+    /* ---------- Online/Offline Events ---------- */
+
+    window.addEventListener('online', function() {
+        fetchRate();
+    });
+
+    window.addEventListener('offline', function() {
+        if (rate) {
+            offlineBadge.classList.remove('hidden');
+        }
+    });
+
+    /* ---------- PWA Install Prompt ---------- */
+
+    var deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', function() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+            deferredPrompt = null;
+            installBtn.style.display = 'none';
+        });
+    });
+
+    window.addEventListener('appinstalled', function() {
+        installBtn.style.display = 'none';
+    });
+
+    /* ---------- Service Worker ---------- */
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+
+    /* ---------- Start ---------- */
 
     fetchRate();
     setInterval(fetchRate, 30 * 60 * 1000);
