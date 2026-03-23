@@ -37,7 +37,7 @@
             align-items: center;
             padding: 12px;
             padding-top: env(safe-area-inset-top, 12px);
-            padding-bottom: env(safe-area-inset-bottom, 12px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 12px) + 70px);
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
         }
@@ -63,7 +63,7 @@
             content: '';
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: 30px;
+            height: 24px;
             background: repeating-linear-gradient(
                 90deg,
                 var(--accent) 0px,
@@ -84,8 +84,8 @@
         /* === HEADER === */
         .header {
             text-align: center;
-            margin-bottom: 16px;
-            padding: 12px 0;
+            margin-bottom: 14px;
+            padding: 10px 0;
             position: relative;
         }
 
@@ -121,7 +121,7 @@
         .nav-tabs {
             display: flex;
             gap: 4px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .nav-tab {
             flex: 1;
@@ -146,9 +146,9 @@
         .rate-banner {
             background: var(--panel-bg);
             border: 1px solid var(--accent);
-            padding: 14px 16px;
+            padding: 12px 14px;
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             position: relative;
             clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
         }
@@ -177,21 +177,21 @@
             text-transform: uppercase;
             letter-spacing: 3px;
             color: var(--accent);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .rate-banner .rate {
             font-family: 'Cinzel', serif;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--text-bright);
             text-shadow: 0 0 10px var(--accent-glow);
         }
 
         .rate-banner .updated {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             opacity: 0.4;
-            margin-top: 4px;
+            margin-top: 3px;
             letter-spacing: 1px;
         }
 
@@ -205,7 +205,7 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             padding: 2px 10px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
         .offline-badge.hidden { display: none; }
 
@@ -213,7 +213,7 @@
         .card {
             background: var(--panel-bg);
             border: 1px solid var(--accent);
-            padding: 24px 20px;
+            padding: 20px 16px;
             position: relative;
             clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
         }
@@ -239,7 +239,7 @@
         }
 
         .input-group {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .input-group label {
@@ -247,12 +247,12 @@
             align-items: center;
             gap: 8px;
             font-family: 'Share Tech Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--accent);
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .input-group label .flag {
@@ -261,9 +261,9 @@
 
         .input-group input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             font-family: 'Cinzel', serif;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 700;
             border: 1px solid rgba(204, 0, 0, 0.4);
             background: rgba(0, 0, 0, 0.6);
@@ -288,13 +288,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: -4px auto 8px;
-            width: 44px;
-            height: 44px;
+            margin: -2px auto 6px;
+            width: 42px;
+            height: 42px;
             border: 1px solid var(--accent);
             background: rgba(204, 0, 0, 0.1);
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: all 0.25s;
             color: var(--accent);
             clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
@@ -310,9 +310,9 @@
         .result-display {
             background: rgba(204, 0, 0, 0.08);
             border: 1px solid rgba(204, 0, 0, 0.3);
-            padding: 16px;
+            padding: 14px;
             text-align: center;
-            margin-top: 12px;
+            margin-top: 10px;
             position: relative;
         }
 
@@ -332,16 +332,16 @@
         }
 
         .result-display .result-label {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             text-transform: uppercase;
             letter-spacing: 3px;
             color: var(--accent);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .result-display .result-value {
             font-family: 'Cinzel', serif;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 900;
             color: var(--text-bright);
             text-shadow: 0 0 12px var(--accent-glow);
@@ -353,8 +353,8 @@
             padding: 10px;
             background: rgba(255, 82, 82, 0.1);
             border: 1px solid rgba(255, 82, 82, 0.4);
-            margin-top: 12px;
-            font-size: 0.75rem;
+            margin-top: 10px;
+            font-size: 0.72rem;
             color: #ff7b7b;
             display: none;
         }
@@ -363,18 +363,18 @@
         .gradient-panel {
             background: var(--panel-bg);
             border: 1px solid rgba(204, 0, 0, 0.3);
-            padding: 14px 16px;
-            margin-top: 12px;
+            padding: 12px 14px;
+            margin-top: 10px;
             clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
         }
 
         .gradient-panel .gp-title {
             font-family: 'Cinzel', serif;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
             letter-spacing: 3px;
             color: var(--accent);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-align: center;
         }
 
@@ -382,15 +382,15 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .gradient-row label {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: rgba(255,255,255,0.5);
-            min-width: 70px;
+            min-width: 65px;
         }
 
         .gradient-row input[type="color"] {
@@ -407,7 +407,7 @@
         .gradient-row input[type="color"]::-webkit-color-swatch { border: none; }
 
         .gradient-preview {
-            height: 6px;
+            height: 5px;
             border: 1px solid rgba(204, 0, 0, 0.3);
             margin-top: 4px;
         }
@@ -415,8 +415,9 @@
         /* === FOOTER === */
         .footer {
             text-align: center;
-            margin-top: 16px;
-            font-size: 0.6rem;
+            margin-top: 14px;
+            margin-bottom: 10px;
+            font-size: 0.58rem;
             opacity: 0.3;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -439,7 +440,7 @@
         /* === INSTALL BUTTON === */
         .install-prompt {
             position: fixed;
-            bottom: 40px;
+            bottom: 34px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--accent);
@@ -461,15 +462,40 @@
             transform: translateX(-50%) scale(0.96);
         }
 
-        /* === RESPONSIVE === */
-        @media (max-width: 400px) {
+        /* === RESPONSIVE - MOBILE === */
+        @media (max-width: 420px) {
+            body { padding: 8px; padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 70px); }
+            .header { margin-bottom: 10px; padding: 8px 0; }
+            .header .flags { font-size: 1.1rem; letter-spacing: 8px; }
             .header h1 { font-size: 1.6rem; letter-spacing: 3px; }
-            .card { padding: 18px 14px; }
-            .input-group input { font-size: 1.3rem; padding: 12px; }
-            .result-display .result-value { font-size: 1.5rem; }
-            .nav-tab { font-size: 0.6rem; padding: 5px 2px; }
+            .nav-tabs { gap: 3px; margin-bottom: 8px; }
+            .nav-tab { font-size: 0.6rem; padding: 5px 2px; letter-spacing: 0.5px; }
+            .rate-banner { padding: 10px 12px; }
+            .rate-banner .label { font-size: 0.6rem; letter-spacing: 2px; }
+            .rate-banner .rate { font-size: 1.15rem; }
+            .card { padding: 16px 12px; }
+            .input-group { margin-bottom: 10px; }
+            .input-group label { font-size: 0.65rem; letter-spacing: 1.5px; }
+            .input-group input { font-size: 1.25rem; padding: 10px 12px; }
+            .swap-btn { width: 36px; height: 36px; font-size: 1rem; }
+            .result-display { padding: 12px; }
+            .result-display .result-value { font-size: 1.4rem; }
+            .result-display .result-label { font-size: 0.58rem; letter-spacing: 2px; }
+            .gradient-panel { padding: 10px 12px; }
+            .gradient-panel .gp-title { font-size: 0.6rem; letter-spacing: 2px; }
+            .gradient-row label { font-size: 0.58rem; min-width: 55px; }
+            .install-prompt { font-size: 0.7rem; padding: 8px 18px; bottom: 30px; }
         }
 
+        /* === RESPONSIVE - VERY SMALL === */
+        @media (max-width: 340px) {
+            .header h1 { font-size: 1.3rem; letter-spacing: 2px; }
+            .rate-banner .rate { font-size: 1rem; }
+            .input-group input { font-size: 1.1rem; padding: 9px 10px; }
+            .result-display .result-value { font-size: 1.2rem; }
+        }
+
+        /* === RESPONSIVE - TABLET/DESKTOP === */
         @media (min-width: 600px) {
             .header h1 { font-size: 2.6rem; }
             .rate-banner .rate { font-size: 1.8rem; }
