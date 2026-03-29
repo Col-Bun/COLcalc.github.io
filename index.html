@@ -3,285 +3,586 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numogram</title>
+<title>Interactive Decimal Numogram</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  * { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+  }
+  
   body {
-    background: #000;
-    color: #fff;
+    background: #050505;
+    color: #e0e0e0;
     font-family: 'Nunito', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    padding: 20px;
   }
-  .numogram-container {
-    position: relative;
-    width: 900px;
-    height: 900px;
+
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 1400px;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .numogram-wrapper {
+    flex: 1 1 600px;
     background: #000;
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+    border: 2px solid rgba(255,50,50,0.3);
+    overflow: hidden;
+    aspect-ratio: 1;
   }
-  svg.numogram-svg { width: 100%; height: 100%; }
+
+  .numogram-wrapper svg { 
+    width: 100%; 
+    height: 100%; 
+    display: block; 
+  }
+
+  .zone-group {
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .zone-group:hover circle:first-child {
+    fill: #1a1a1a;
+    stroke: #ff3c8e;
+    filter: drop-shadow(0 0 15px rgba(255, 60, 142, 0.8));
+  }
+
+  .info-panel {
+    flex: 1 1 400px;
+    background: rgba(20, 0, 0, 0.6);
+    border: 2px solid #ff3333;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    height: calc(100vh - 40px);
+    max-height: 900px;
+    overflow-y: auto;
+  }
+
+  .info-panel::-webkit-scrollbar {
+    width: 8px;
+  }
+  .info-panel::-webkit-scrollbar-thumb {
+    background: #ff3333;
+    border-radius: 4px;
+  }
+
+  .info-panel h2 {
+    color: #ff3c8e;
+    margin-bottom: 12px;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .info-panel h3 {
+    color: #a8e84c;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    border-bottom: 1px solid rgba(168,232,76,0.3);
+    padding-bottom: 4px;
+  }
+
+  .info-panel p {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .info-panel ul {
+    margin-left: 20px;
+    margin-bottom: 12px;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .info-panel li {
+    margin-bottom: 6px;
+  }
+
+  .citation {
+    font-size: 0.75rem;
+    color: #00e5ff;
+    vertical-align: super;
+  }
 </style>
 </head>
 <body>
-<div class="numogram-container">
-<svg class="numogram-svg" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <!-- Glow for zone 1 -->
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <!-- Stipple/grain texture for flow paths -->
-    <filter id="grain" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
-      <feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="4" seed="2" result="noise"/>
-      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.6  0 0 0 0 0.6  0 0 0 0 0.6  0 0 0 -2.1 1.5" result="thresh"/>
-      <feComposite operator="in" in="thresh" in2="SourceGraphic" result="masked"/>
-    </filter>
-    <filter id="grainDense" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
-      <feTurbulence type="fractalNoise" baseFrequency="2.0" numOctaves="5" seed="7" result="noise"/>
-      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.7  0 0 0 0 0.7  0 0 0 0 0.7  0 0 0 -1.8 1.4" result="thresh"/>
-      <feComposite operator="in" in="thresh" in2="SourceGraphic" result="masked"/>
-    </filter>
-  </defs>
 
-  <!-- ======== FLOW PATHS (stippled/grainy texture) ======== -->
+<div class="container">
+  <div class="numogram-wrapper">
+    <svg viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="grain" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
+          <feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="4" seed="2" result="noise"/>
+          <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.6 0 0 0 0 0.6 0 0 0 0 0.6 0 0 0 -2.1 1.5" result="thresh"/>
+          <feComposite operator="in" in="thresh" in2="SourceGraphic" result="masked"/>
+        </filter>
+        <filter id="grainD" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
+          <feTurbulence type="fractalNoise" baseFrequency="2.0" numOctaves="5" seed="7" result="noise"/>
+          <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.7 0 0 0 0 0.7 0 0 0 0 0.7 0 0 0 -1.8 1.4" result="thresh"/>
+          <feComposite operator="in" in="thresh" in2="SourceGraphic" result="masked"/>
+        </filter>
+      </defs>
 
-  <!-- Rise: from 7+ curving up to Warp -->
-  <path d="M 728,415 C 790,320 780,220 680,155 Q 650,130 585,140"
-        stroke="#aaa" stroke-width="55" fill="none" stroke-linecap="round" filter="url(#grain)"/>
-  <path d="M 728,415 C 790,320 780,220 680,155 Q 650,130 585,140"
-        stroke="#ddd" stroke-width="30" fill="none" stroke-linecap="round" filter="url(#grainDense)" opacity="0.5"/>
+      <!-- Flow paths (stippled) -->
+      <path d="M 728,415 C 790,320 780,220 680,155 Q 650,130 585,140" stroke="#aaa" stroke-width="55" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <path d="M 728,415 C 790,320 780,220 680,155 Q 650,130 585,140" stroke="#ddd" stroke-width="30" fill="none" stroke-linecap="round" filter="url(#grainD)" opacity="0.5"/>
+      <path d="M 718,408 Q 580,375 400,408" stroke="#aaa" stroke-width="55" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <path d="M 718,408 Q 580,375 400,408" stroke="#ddd" stroke-width="30" fill="none" stroke-linecap="round" filter="url(#grainD)" opacity="0.5"/>
+      <path d="M 312,548 Q 390,605 468,648" stroke="#aaa" stroke-width="55" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <path d="M 312,548 Q 390,605 468,648" stroke="#ddd" stroke-width="30" fill="none" stroke-linecap="round" filter="url(#grainD)" opacity="0.5"/>
+      <path d="M 478,688 L 480,768" stroke="#999" stroke-width="42" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <path d="M 482,812 L 490,868" stroke="#888" stroke-width="36" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <path d="M 490,918 L 486,972" stroke="#777" stroke-width="28" fill="none" stroke-linecap="round" filter="url(#grain)"/>
 
-  <!-- Hold: from 7+ area left to 5+ area -->
-  <path d="M 718,408 Q 580,375 400,408"
-        stroke="#aaa" stroke-width="55" fill="none" stroke-linecap="round" filter="url(#grain)"/>
-  <path d="M 718,408 Q 580,375 400,408"
-        stroke="#ddd" stroke-width="30" fill="none" stroke-linecap="round" filter="url(#grainDense)" opacity="0.5"/>
+      <!-- Flow labels -->
+      <text x="555" y="368" fill="#fff" font-size="30" font-weight="800" font-family="Nunito,sans-serif" text-anchor="middle">Hold</text>
+      <text x="378" y="578" fill="#fff" font-size="30" font-weight="800" font-family="Nunito,sans-serif" text-anchor="middle">Sink</text>
+      <text x="792" y="305" fill="#fff" font-size="30" font-weight="800" font-family="Nunito,sans-serif" text-anchor="middle">Rise</text>
 
-  <!-- Sink: from 4- area down to 1+ -->
-  <path d="M 312,548 Q 390,605 468,648"
-        stroke="#aaa" stroke-width="55" fill="none" stroke-linecap="round" filter="url(#grain)"/>
-  <path d="M 312,548 Q 390,605 468,648"
-        stroke="#ddd" stroke-width="30" fill="none" stroke-linecap="round" filter="url(#grainDense)" opacity="0.5"/>
+      <!-- Warp circles -->
+      <circle cx="500" cy="168" r="125" fill="none" stroke="#fff" stroke-width="2" opacity="0.5"/>
+      <circle cx="530" cy="152" r="78" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4"/>
+      <text x="652" y="155" fill="#fff" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Warp</text>
+      <text x="652" y="178" fill="#fff" font-size="17" font-family="Nunito,sans-serif">(Current)</text>
 
-  <!-- Vertical trunk: 1+ -> 8- -->
-  <path d="M 478,688 L 480,768"
-        stroke="#999" stroke-width="42" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <!-- Plex circles -->
+      <circle cx="494" cy="942" r="85" fill="none" stroke="#fff" stroke-width="2" opacity="0.5"/>
+      <circle cx="487" cy="972" r="48" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4"/>
+      <text x="598" y="918" fill="#fff" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Plex</text>
+      <text x="598" y="940" fill="#fff" font-size="17" font-family="Nunito,sans-serif">(current)</text>
 
-  <!-- 8- -> 9+ -->
-  <path d="M 482,812 L 490,868"
-        stroke="#888" stroke-width="36" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <!-- Connection lines -->
+      <line x1="420" y1="198" x2="522" y2="165" stroke="#fff" stroke-width="2" opacity="0.55"/>
+      <line x1="558" y1="182" x2="615" y2="300" stroke="#fff" stroke-width="2" opacity="0.55"/>
+      <line x1="648" y1="335" x2="708" y2="398" stroke="#fff" stroke-width="1.5" opacity="0.45"/>
+      <line x1="392" y1="445" x2="315" y2="520" stroke="#fff" stroke-width="2" opacity="0.55"/>
+      <line x1="325" y1="558" x2="455" y2="642" stroke="#fff" stroke-width="1.5" opacity="0.45"/>
+      <path d="M 738,398 Q 768,270 668,158" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.35"/>
+      <line x1="478" y1="688" x2="480" y2="765" stroke="#fff" stroke-width="2" opacity="0.55"/>
+      <line x1="483" y1="815" x2="490" y2="868" stroke="#fff" stroke-width="2" opacity="0.55"/>
+      <line x1="492" y1="918" x2="488" y2="960" stroke="#fff" stroke-width="2" opacity="0.55"/>
 
-  <!-- 9+ -> 0- -->
-  <path d="M 490,918 L 486,972"
-        stroke="#777" stroke-width="28" fill="none" stroke-linecap="round" filter="url(#grain)"/>
+      <!-- Zone 3+ -->
+      <g class="zone-group" onclick="showZone(3)">
+        <circle cx="395" cy="198" r="28" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="379" y="208" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">3</text>
+        <text x="410" y="190" fill="#fff" font-size="14" font-weight="700">+</text>
+        <circle cx="395" cy="220" r="5" fill="none" stroke="#ff8800" stroke-width="1.5"/>
+        <polygon points="395,230 389,240 401,240" fill="none" stroke="#ff8800" stroke-width="1.5"/>
+        <text x="338" y="178" fill="#22dd22" font-size="19" font-weight="700" font-style="italic">"zx"</text>
+      </g>
 
-  <!-- ======== FLOW LABELS ======== -->
-  <text x="555" y="368" fill="#fff" font-size="30" font-weight="800" font-family="Nunito,sans-serif" text-anchor="middle">Hold</text>
-  <text x="378" y="578" fill="#fff" font-size="30" font-weight="800" font-family="Nunito,sans-serif" text-anchor="middle">Sink</text>
-  <text x="792" y="305" fill="#fff" font-size="30" font-weight="800" font-family="Nunito,sans-serif" text-anchor="middle">Rise</text>
+      <!-- Zone 6- -->
+      <g class="zone-group" onclick="showZone(6)">
+        <circle cx="550" cy="152" r="30" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="534" y="162" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">6</text>
+        <text x="565" y="145" fill="#fff" font-size="14" font-weight="700">-</text>
+        <circle cx="550" cy="178" r="5" fill="none" stroke="#ff00ff" stroke-width="1.5"/>
+        <text x="572" y="205" fill="#cccc00" font-size="19" font-weight="700" font-style="italic">"tch"</text>
+      </g>
 
-  <!-- ======== WARP ENCOMPASSING CIRCLES ======== -->
-  <circle cx="500" cy="168" r="125" fill="none" stroke="#fff" stroke-width="2" opacity="0.5"/>
-  <circle cx="530" cy="152" r="78" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4"/>
+      <!-- Zone 2- -->
+      <g class="zone-group" onclick="showZone(2)">
+        <circle cx="625" cy="318" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="610" y="327" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">2</text>
+        <text x="640" y="310" fill="#fff" font-size="14" font-weight="700">-</text>
+        <circle cx="625" cy="340" r="5" fill="none" stroke="#4488ff" stroke-width="1.5"/>
+        <text x="652" y="308" fill="#4488ff" font-size="19" font-weight="700" font-style="italic">"dt"</text>
+      </g>
 
-  <!-- Warp (Current) label -->
-  <text x="652" y="155" fill="#fff" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Warp</text>
-  <text x="652" y="178" fill="#fff" font-size="17" font-weight="400" font-family="Nunito,sans-serif">(Current)</text>
+      <!-- Zone 5+ -->
+      <g class="zone-group" onclick="showZone(5)">
+        <circle cx="390" cy="418" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="375" y="427" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">5</text>
+        <text x="405" y="410" fill="#fff" font-size="14" font-weight="700">+</text>
+        <circle cx="390" cy="440" r="5" fill="none" stroke="#cc9900" stroke-width="1.5"/>
+        <text x="345" y="462" fill="#ccaa00" font-size="19" font-weight="700" font-style="italic">"ktt"</text>
+      </g>
 
-  <!-- ======== PLEX ENCOMPASSING CIRCLES ======== -->
-  <circle cx="494" cy="942" r="85" fill="none" stroke="#fff" stroke-width="2" opacity="0.5"/>
-  <circle cx="487" cy="972" r="48" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4"/>
+      <!-- Zone 4- -->
+      <g class="zone-group" onclick="showZone(4)">
+        <circle cx="300" cy="538" r="27" fill="#000" stroke="#ff2222" stroke-width="2.5"/>
+        <text x="285" y="547" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">4</text>
+        <text x="315" y="530" fill="#fff" font-size="14" font-weight="700">-</text>
+        <circle cx="300" cy="560" r="5" fill="none" stroke="#ff2222" stroke-width="1.5"/>
+        <text x="245" y="580" fill="#ff3333" font-size="19" font-weight="700" font-style="italic">"skr"</text>
+      </g>
 
-  <!-- Plex (current) label -->
-  <text x="598" y="918" fill="#fff" font-size="22" font-weight="800" font-family="Nunito,sans-serif">Plex</text>
-  <text x="598" y="940" fill="#fff" font-size="17" font-weight="400" font-family="Nunito,sans-serif">(current)</text>
+      <!-- Zone 7+ -->
+      <g class="zone-group" onclick="showZone(7)">
+        <circle cx="728" cy="408" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="713" y="417" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">7</text>
+        <text x="743" y="400" fill="#fff" font-size="14" font-weight="700">+</text>
+        <circle cx="728" cy="430" r="5" fill="none" stroke="#4488ff" stroke-width="1.5"/>
+        <text x="756" y="418" fill="#4488ff" font-size="19" font-weight="700" font-style="italic">"pb"</text>
+      </g>
 
-  <!-- ======== CONNECTION LINES ======== -->
-  <!-- 3 to 6 -->
-  <line x1="420" y1="198" x2="522" y2="165" stroke="#fff" stroke-width="2" opacity="0.55"/>
-  <!-- 6 to 2 -->
-  <line x1="558" y1="182" x2="615" y2="300" stroke="#fff" stroke-width="2" opacity="0.55"/>
-  <!-- 2 to 7 -->
-  <line x1="648" y1="335" x2="708" y2="398" stroke="#fff" stroke-width="1.5" opacity="0.45"/>
-  <!-- 5 to 4 -->
-  <line x1="392" y1="445" x2="315" y2="520" stroke="#fff" stroke-width="2" opacity="0.55"/>
-  <!-- 4 to 1 -->
-  <line x1="325" y1="558" x2="455" y2="642" stroke="#fff" stroke-width="1.5" opacity="0.45"/>
-  <!-- 7 rise curve to Warp -->
-  <path d="M 738,398 Q 768,270 668,158" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.35"/>
-  <!-- 1 to 8 -->
-  <line x1="478" y1="688" x2="480" y2="765" stroke="#fff" stroke-width="2" opacity="0.55"/>
-  <!-- 8 to 9 -->
-  <line x1="483" y1="815" x2="490" y2="868" stroke="#fff" stroke-width="2" opacity="0.55"/>
-  <!-- 9 to 0 -->
-  <line x1="492" y1="918" x2="488" y2="960" stroke="#fff" stroke-width="2" opacity="0.55"/>
-  <!-- Gate connection lines -->
-  <line x1="418" y1="668" x2="455" y2="655" stroke="#fff" stroke-width="1.5" opacity="0.35"/>
-  <line x1="535" y1="640" x2="500" y2="650" stroke="#fff" stroke-width="1.5" opacity="0.35"/>
+      <!-- Zone 1+ -->
+      <g class="zone-group" onclick="showZone(1)">
+        <circle cx="478" cy="652" r="32" fill="#fff" stroke="#fff" stroke-width="3" filter="url(#glow)"/>
+        <text x="461" y="663" fill="#000" font-size="26" font-weight="900" font-family="Nunito,sans-serif">1</text>
+        <text x="493" y="645" fill="#000" font-size="15" font-weight="700">+</text>
+        <circle cx="478" cy="680" r="5" fill="none" stroke="#ff8800" stroke-width="1.5"/>
+        <polygon points="478,688 472,698 484,698" fill="#fff" stroke="#fff" stroke-width="1"/>
+        <text x="438" y="718" fill="#cccc00" font-size="19" font-weight="700" font-style="italic">"gl"</text>
+      </g>
 
-  <!-- ======== ZONE 3+ ======== -->
-  <circle cx="395" cy="198" r="28" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="379" y="208" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">3</text>
-  <text x="410" y="190" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">+</text>
-  <circle cx="395" cy="220" r="5" fill="none" stroke="#ff8800" stroke-width="1.5"/>
-  <polygon points="395,230 389,240 401,240" fill="none" stroke="#ff8800" stroke-width="1.5"/>
-  <text x="338" y="178" fill="#22dd22" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"zx"</text>
+      <!-- Zone 8- -->
+      <g class="zone-group" onclick="showZone(8)">
+        <circle cx="482" cy="788" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="467" y="797" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">8</text>
+        <text x="497" y="780" fill="#fff" font-size="14" font-weight="700">-</text>
+        <polygon points="482,761 476,751 488,751" fill="none" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="482" cy="810" r="5" fill="none" stroke="#44cc44" stroke-width="1.5"/>
+        <text x="395" y="783" fill="#44cc44" font-size="19" font-weight="700" font-style="italic">"mnm"</text>
+      </g>
 
-  <!-- ======== ZONE 6- ======== -->
-  <circle cx="550" cy="152" r="30" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="534" y="162" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">6</text>
-  <text x="565" y="145" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">-</text>
-  <circle cx="550" cy="178" r="5" fill="none" stroke="#ff00ff" stroke-width="1.5"/>
-  <text x="572" y="205" fill="#cccc00" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"tch"</text>
+      <!-- Zone 9+ -->
+      <g class="zone-group" onclick="showZone(9)">
+        <circle cx="492" cy="890" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="477" y="899" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">9</text>
+        <text x="507" y="882" fill="#fff" font-size="14" font-weight="700">+</text>
+        <polygon points="492,919 486,929 498,929" fill="#fff" stroke="#fff" stroke-width="1"/>
+        <circle cx="492" cy="912" r="5" fill="none" stroke="#cccc00" stroke-width="1.5"/>
+        <text x="520" y="892" fill="#cccc00" font-size="17" font-weight="700" font-style="italic">"tn"</text>
+      </g>
 
-  <!-- ======== ZONE 2- ======== -->
-  <circle cx="625" cy="318" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="610" y="327" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">2</text>
-  <text x="640" y="310" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">-</text>
-  <circle cx="625" cy="340" r="5" fill="none" stroke="#4488ff" stroke-width="1.5"/>
-  <text x="652" y="308" fill="#4488ff" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"dt"</text>
+      <!-- Zone 0- -->
+      <g class="zone-group" onclick="showZone(0)">
+        <circle cx="486" cy="985" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
+        <text x="471" y="994" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">0</text>
+        <text x="500" y="978" fill="#fff" font-size="14" font-weight="700">-</text>
+        <polygon points="486,958 480,948 492,948" fill="none" stroke="#fff" stroke-width="1.5"/>
+        <circle cx="486" cy="1008" r="5" fill="none" stroke="#44cc44" stroke-width="1.5"/>
+        <text x="418" y="1038" fill="#44cc44" font-size="17" font-weight="700" font-style="italic">"eiaoung"</text>
+      </g>
 
-  <!-- ======== ZONE 5+ ======== -->
-  <circle cx="390" cy="418" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="375" y="427" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">5</text>
-  <text x="405" y="410" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">+</text>
-  <circle cx="390" cy="440" r="5" fill="none" stroke="#cc9900" stroke-width="1.5"/>
-  <text x="345" y="462" fill="#ccaa00" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"ktt"</text>
+      <!-- Gate numbers -->
+      <g opacity="0.75" font-family="Nunito,sans-serif" font-weight="700" fill="#fff" font-size="13">
+        <circle cx="500" cy="46" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="500" y="51" text-anchor="middle">15</text>
+        <circle cx="555" cy="76" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="555" y="81" text-anchor="middle">6</text>
+        <circle cx="465" cy="158" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="465" y="163" text-anchor="middle">21</text>
+        <circle cx="370" cy="252" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="370" y="257" text-anchor="middle">3</text>
+        <circle cx="498" cy="600" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="498" y="605" text-anchor="middle">1</text>
+        <circle cx="538" cy="635" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="538" y="640" text-anchor="middle">28</text>
+        <circle cx="418" cy="668" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="418" y="673" text-anchor="middle">10</text>
+        <circle cx="508" cy="845" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="508" y="850" text-anchor="middle">36</text>
+        <circle cx="458" cy="940" r="14" fill="none" stroke="#fff" stroke-width="1.5"/><text x="458" y="945" text-anchor="middle">45</text>
+      </g>
 
-  <!-- ======== ZONE 4- ======== -->
-  <circle cx="300" cy="538" r="27" fill="#000" stroke="#ff2222" stroke-width="2.5"/>
-  <text x="285" y="547" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">4</text>
-  <text x="315" y="530" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">-</text>
-  <circle cx="300" cy="560" r="5" fill="none" stroke="#ff2222" stroke-width="1.5"/>
-  <text x="245" y="580" fill="#ff3333" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"skr"</text>
+      <!-- Region labels -->
+      <text x="50" y="72" fill="#fff" font-size="34" font-weight="900" text-decoration="underline">Warp</text>
+      <text x="55" y="104" fill="#22dd22" font-size="24" font-weight="700" font-style="italic">Hyper-Reality</text>
+      <text x="55" y="134" fill="#22dd22" font-size="24" font-weight="700">Djynxx 6::3</text>
+      <text x="50" y="448" fill="#fff" font-size="32" font-weight="900" text-decoration="underline">e-Circuit</text>
+      <text x="55" y="480" fill="#22dd22" font-size="21" font-weight="700" font-style="italic">breakthrough</text>
+      <text x="55" y="506" fill="#22dd22" font-size="21" font-weight="700" font-style="italic">connected</text>
+      <text x="55" y="532" fill="#22dd22" font-size="21" font-weight="700" font-style="italic">psychoactives</text>
+      <text x="50" y="852" fill="#fff" font-size="34" font-weight="900" text-decoration="underline">Plex</text>
+      <text x="55" y="884" fill="#22dd22" font-size="21" font-weight="700" font-style="italic">Eiriel (Tchukululok)</text>
+      <text x="55" y="912" fill="#22dd22" font-size="21" font-weight="700">Dissociative Void</text>
+      <text x="55" y="940" fill="#22dd22" font-size="21" font-weight="700">Uttunul 9::0</text>
 
-  <!-- ======== ZONE 7+ ======== -->
-  <circle cx="728" cy="408" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="713" y="417" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">7</text>
-  <text x="743" y="400" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">+</text>
-  <circle cx="728" cy="430" r="5" fill="none" stroke="#4488ff" stroke-width="1.5"/>
-  <text x="756" y="418" fill="#4488ff" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"pb"</text>
+      <!-- Zone/Aspect table -->
+      <g transform="translate(830,48)" font-family="Nunito,sans-serif">
+        <rect x="0" y="0" width="80" height="30" fill="none" stroke="#fff" stroke-width="2"/>
+        <text x="40" y="22" fill="#fff" font-size="16" font-weight="900" text-anchor="middle">Zone</text>
+        <rect x="80" y="0" width="140" height="30" fill="none" stroke="#fff" stroke-width="2"/>
+        <text x="150" y="22" fill="#fff" font-size="16" font-weight="900" text-anchor="middle">Aspect</text>
+        <rect x="0" y="30" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/><text x="40" y="50" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">9::0</text>
+        <rect x="80" y="30" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/><text x="90" y="50" fill="#fff" font-size="13" font-weight="700">Foundation</text>
+        <rect x="0" y="58" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/><text x="40" y="78" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">8::1</text>
+        <rect x="80" y="58" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/><text x="90" y="78" fill="#fff" font-size="13" font-weight="700">Anamnesis</text>
+        <rect x="0" y="86" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/><text x="40" y="106" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">7::2</text>
+        <rect x="80" y="86" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/><text x="90" y="106" fill="#fff" font-size="13" font-weight="700">Geotraumatics</text>
+        <rect x="0" y="114" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/><text x="40" y="134" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">6::3</text>
+        <rect x="80" y="114" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/><text x="90" y="134" fill="#fff" font-size="13" font-weight="700">Fortress</text>
+        <rect x="0" y="142" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/><text x="40" y="162" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">5::4</text>
+        <rect x="80" y="142" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/><text x="90" y="162" fill="#fff" font-size="13" font-weight="700">Apocalypse</text>
+      </g>
+    </svg>
+  </div>
 
-  <!-- ======== ZONE 1+ (bright white, glowing) ======== -->
-  <circle cx="478" cy="652" r="32" fill="#fff" stroke="#fff" stroke-width="3" filter="url(#glow)"/>
-  <text x="461" y="663" fill="#000" font-size="26" font-weight="900" font-family="Nunito,sans-serif">1</text>
-  <text x="493" y="645" fill="#000" font-size="15" font-weight="700" font-family="Nunito,sans-serif">+</text>
-  <circle cx="478" cy="680" r="5" fill="none" stroke="#ff8800" stroke-width="1.5"/>
-  <polygon points="478,688 472,698 484,698" fill="#fff" stroke="#fff" stroke-width="1"/>
-  <text x="438" y="718" fill="#cccc00" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"gl"</text>
-
-  <!-- ======== ZONE 8- ======== -->
-  <circle cx="482" cy="788" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="467" y="797" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">8</text>
-  <text x="497" y="780" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">-</text>
-  <polygon points="482,761 476,751 488,751" fill="none" stroke="#fff" stroke-width="1.5"/>
-  <circle cx="482" cy="810" r="5" fill="none" stroke="#44cc44" stroke-width="1.5"/>
-  <text x="395" y="783" fill="#44cc44" font-size="19" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"mnm"</text>
-
-  <!-- ======== ZONE 9+ ======== -->
-  <circle cx="492" cy="890" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="477" y="899" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">9</text>
-  <text x="507" y="882" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">+</text>
-  <polygon points="492,919 486,929 498,929" fill="#fff" stroke="#fff" stroke-width="1"/>
-  <circle cx="492" cy="912" r="5" fill="none" stroke="#cccc00" stroke-width="1.5"/>
-  <text x="520" y="892" fill="#cccc00" font-size="17" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"tn"</text>
-
-  <!-- ======== ZONE 0- ======== -->
-  <circle cx="486" cy="985" r="27" fill="#000" stroke="#fff" stroke-width="2.5"/>
-  <text x="471" y="994" fill="#fff" font-size="24" font-weight="900" font-family="Nunito,sans-serif">0</text>
-  <text x="500" y="978" fill="#fff" font-size="14" font-weight="700" font-family="Nunito,sans-serif">-</text>
-  <polygon points="486,958 480,948 492,948" fill="none" stroke="#fff" stroke-width="1.5"/>
-  <circle cx="486" cy="1008" r="5" fill="none" stroke="#44cc44" stroke-width="1.5"/>
-  <text x="418" y="1038" fill="#44cc44" font-size="17" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">"eiaoung"</text>
-
-  <!-- ======== GATE NUMBERS (small circled numbers) ======== -->
-  <g opacity="0.75" font-family="Nunito,sans-serif" font-weight="700" fill="#fff" font-size="13">
-    <!-- 15 - top of Warp -->
-    <circle cx="500" cy="46" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="500" y="51" text-anchor="middle">15</text>
-    <!-- 6 - upper right of Warp -->
-    <circle cx="555" cy="76" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="555" y="81" text-anchor="middle">6</text>
-    <!-- 21 - between 3 and 6 -->
-    <circle cx="465" cy="158" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="465" y="163" text-anchor="middle">21</text>
-    <!-- 3 - below zone 3 -->
-    <circle cx="370" cy="252" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="370" y="257" text-anchor="middle">3</text>
-    <!-- 1 - above zone 1 -->
-    <circle cx="498" cy="600" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="498" y="605" text-anchor="middle">1</text>
-    <!-- 28 - right of zone 1 -->
-    <circle cx="538" cy="635" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="538" y="640" text-anchor="middle">28</text>
-    <!-- 10 - left of zone 1 -->
-    <circle cx="418" cy="668" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="418" y="673" text-anchor="middle">10</text>
-    <!-- 36 - between 8 and 9 -->
-    <circle cx="508" cy="845" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="508" y="850" text-anchor="middle">36</text>
-    <!-- 45 - between 9 and 0 -->
-    <circle cx="458" cy="940" r="14" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <text x="458" y="945" text-anchor="middle">45</text>
-  </g>
-
-  <!-- ======== REGION LABELS ======== -->
-
-  <!-- Warp (top-left) -->
-  <text x="50" y="72" fill="#fff" font-size="34" font-weight="900" font-family="Nunito,sans-serif" text-decoration="underline">Warp</text>
-  <text x="55" y="104" fill="#22dd22" font-size="24" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">Hyper-Reality</text>
-  <text x="55" y="134" fill="#22dd22" font-size="24" font-weight="700" font-family="Nunito,sans-serif">Djynxx 6::3</text>
-
-  <!-- e-Circuit (left middle) -->
-  <text x="50" y="448" fill="#fff" font-size="32" font-weight="900" font-family="Nunito,sans-serif" text-decoration="underline">e-Circuit</text>
-  <text x="55" y="480" fill="#22dd22" font-size="21" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">breakthrough</text>
-  <text x="55" y="506" fill="#22dd22" font-size="21" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">connected</text>
-  <text x="55" y="532" fill="#22dd22" font-size="21" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">psychoactives</text>
-
-  <!-- Plex (bottom-left) -->
-  <text x="50" y="852" fill="#fff" font-size="34" font-weight="900" font-family="Nunito,sans-serif" text-decoration="underline">Plex</text>
-  <text x="55" y="884" fill="#22dd22" font-size="21" font-weight="700" font-family="Nunito,sans-serif" font-style="italic">Eiriel (Tchukululok)</text>
-  <text x="55" y="912" fill="#22dd22" font-size="21" font-weight="700" font-family="Nunito,sans-serif">Dissociative Void</text>
-  <text x="55" y="940" fill="#22dd22" font-size="21" font-weight="700" font-family="Nunito,sans-serif">Uttunul 9::0</text>
-
-  <!-- ======== ZONE / ASPECT TABLE (top-right) ======== -->
-  <g transform="translate(830,48)" font-family="Nunito,sans-serif">
-    <rect x="0" y="0" width="80" height="30" fill="none" stroke="#fff" stroke-width="2"/>
-    <text x="40" y="22" fill="#fff" font-size="16" font-weight="900" text-anchor="middle">Zone</text>
-    <rect x="80" y="0" width="140" height="30" fill="none" stroke="#fff" stroke-width="2"/>
-    <text x="150" y="22" fill="#fff" font-size="16" font-weight="900" text-anchor="middle">Aspect</text>
-
-    <rect x="0" y="30" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/>
-    <text x="40" y="50" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">9::0</text>
-    <rect x="80" y="30" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/>
-    <text x="90" y="50" fill="#fff" font-size="13" font-weight="700">Foundation</text>
-
-    <rect x="0" y="58" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/>
-    <text x="40" y="78" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">8::1</text>
-    <rect x="80" y="58" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/>
-    <text x="90" y="78" fill="#fff" font-size="13" font-weight="700">Anamnesis</text>
-
-    <rect x="0" y="86" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/>
-    <text x="40" y="106" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">7::2</text>
-    <rect x="80" y="86" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/>
-    <text x="90" y="106" fill="#fff" font-size="13" font-weight="700">Geotraumatics</text>
-
-    <rect x="0" y="114" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/>
-    <text x="40" y="134" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">6::3</text>
-    <rect x="80" y="114" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/>
-    <text x="90" y="134" fill="#fff" font-size="13" font-weight="700">Fortress</text>
-
-    <rect x="0" y="142" width="80" height="28" fill="none" stroke="#fff" stroke-width="1"/>
-    <text x="40" y="162" fill="#fff" font-size="14" font-weight="700" font-family="monospace" text-anchor="middle">5::4</text>
-    <rect x="80" y="142" width="140" height="28" fill="#222" stroke="#fff" stroke-width="1"/>
-    <text x="90" y="162" fill="#fff" font-size="13" font-weight="700">Apocalypse</text>
-  </g>
-
-</svg>
+  <div class="info-panel" id="info-panel">
+    <!-- Default Introduction state -->
+  </div>
 </div>
+
+<script>
+  const introData = `
+    <h2>The Decimal Numogram</h2>
+    <p>Pandemonium is the complete system of Lemurian demonism and time sorcery <span class="citation">[cite: 1]</span>. It consists of two principal components: Numogram (time-map) and Matrix (listing the names, numbers and attributes of the demons) <span class="citation">[cite: 1]</span>.</p>
+    <p>The system is constructed according to immanent criteria latent in decimal numeracy, and involves only basic arithmetical operations (assembled from additions and subtractions) <span class="citation">[cite: 1]</span>. The Numogram, or Decimal Labyrinth, is composed of ten zones (numbered 0-9) and their interconnections <span class="citation">[cite: 1]</span>. These zones are grouped into five pairs (syzygies) by nine-sum twinning [zygonovism] <span class="citation">[cite: 1]</span>.</p>
+    <p><strong>Click on any numbered zone (0-9) on the map to reveal its attributes, planetary alignments, and esoteric data.</strong></p>
+  `;
+
+  const zoneData = {
+    0: `
+      <h2>Zone Zero</h2>
+      <h3>The Numeral 0</h3>
+      <p>The modern figure zero (0) is a closed circle, oval, or ellipse (sometimes differentiated from the letter ‘O' by a diagonal slash) <span class="citation">[cite: 1]</span>. Its archaic Hindu form was the ‘bindu' (or dot, retained in the modern system as the ‘decimal point') <span class="citation">[cite: 1]</span>. Both of these ciphers are of such abstraction that no rapid summary can be other than misleading <span class="citation">[cite: 1]</span>.</p>
+      <p>The figure ‘0' designates the number zero, anterior to the distinction odd/even, and also to the determination of primes (zeroth prime = 1) <span class="citation">[cite: 1]</span>. Zero is the only natural number that is indivisible by one <span class="citation">[cite: 1]</span>. The division of any number by zero produces an infinity (multiplication of any number by zero = 0), in this respect zero treats itself as any other number <span class="citation">[cite: 1]</span>.</p>
+      <p>Zero digitally cumulates to zero <span class="citation">[cite: 1]</span>. Numeric Keypad direction: anomalous <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Zeroth Planet: Sol</h3>
+      <p>The Sun (Sol-0) is by far the largest body in the Solar-system <span class="citation">[cite: 1]</span>. It spins on its own axis at different speeds (with a period of rotation varying from about 36 Earth-days at the poles, to 25.4 at the equator) <span class="citation">[cite: 1]</span>. The sun-spot cycle - driven by periodic reversals in the solar magnetoprocess - lasts for approximately twenty-two years <span class="citation">[cite: 1]</span>.</p>
+      <p>The Sun is approximately 4.5 billion years old, roughly half-way through it's normal existence (or main-sequence of hydrogen-to-helium nucleosynthesis) <span class="citation">[cite: 1]</span>. The preponderance of the Sun's mass within the Solar-system is such that the orbits of the planets (notably Jupiter) only produce minor perturbations in its behavior <span class="citation">[cite: 1]</span>. Sun-worship is extremely prevalent within human religious history <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-0 is the first of two zones mutually composing the Plex-region of the Numogram <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-9 <span class="citation">[cite: 1]</span>. This 9+0 Syzygy is carried by the demon Uttunul <span class="citation">[cite: 1]</span>. Zone-0 provides the terminus for a single Plex-channel (the 0th) <span class="citation">[cite: 1]</span>.</p>
+      <p>Systematic consistency suggests that Zone-0 envelops the Zeroth-Phase of Pandemonium, but as this includes nothing beyond itself it constitutes a nominal or virtual multitude and an "absolute abstraction." <span class="citation">[cite: 1]</span> Zone-0 has no separable power of initiation, and since it does not support imps (or impulse-entities) - even of the first degree - there is no zeroth door <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-0 is allotted the Sarkonian Mesh-Tag 0000 <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-0 Lemurs</h3>
+      <p>Phase-0 tolerates no populations of any kind <span class="citation">[cite: 1]</span>.</p>
+    `,
+    1: `
+      <h2>Zone One</h2>
+      <h3>The Numeral 1</h3>
+      <p>The figure one (1) - elaborated from a simple vertical stroke - is at least semi-ideographic as a relic tally-mark (basically identical in this respect to the Roman numeral 'I') <span class="citation">[cite: 1]</span>. This figure has obvious phallic resonance (especially in contrast to the sign for zero (0)) <span class="citation">[cite: 1]</span>. Its relation to the figure seven (7) is supported by numerological analyses (since seven cumulated (28) reduces to one) <span class="citation">[cite: 1]</span>.</p>
+      <p>The figure '1' designates the number one, first odd number (with odditude of aleph-null), and the zeroth prime (first prime = 2) <span class="citation">[cite: 1]</span>. One is the lowest cardinal number, and the first ordinal <span class="citation">[cite: 1]</span>. One digitally cumulates to one <span class="citation">[cite: 1]</span>. Numeric Keypad direction: South-West <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The First Planet: Mercury</h3>
+      <p>Mercury is the innermost planet of the Solar-system (with a mean orbital distance from the sun of approx. 58 000 000 km) <span class="citation">[cite: 1]</span>. The mercurian year (approx. 88 Earth-days in length) is also the swiftest, which accounts for it's use as the base calculative unit in planetwork calendrics <span class="citation">[cite: 1]</span>.</p>
+      <p>In Roman mythology Mercury (a latinization of the greek Hermes) is known as the messenger of the gods, associated with communication and trade <span class="citation">[cite: 1]</span>. In Lemurian Planetwork Mercury is astrozygonomously paired with Neptune <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-1 is the first of the six Torque-region Zones of the Numogram, and Tractor-Zone of the 5-4 (or 'Sink') Current <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-8 <span class="citation">[cite: 1]</span>. This 8+1 Syzygy is carried by the demon Murmur <span class="citation">[cite: 1]</span>. Zone-1 provides the terminus for three Torque-channels (the 1st, 4th, and 7th) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-1 both initiates and envelops the First-Phase of Pandemonium (including 2 impulse-entities) <span class="citation">[cite: 1]</span>. The First Door - or 'Door of Doors'- is attributed by Muvian sorcery to the amphidemon (and imp of the first degree) Lurgo (1::0) 'the Initiator,' and widely related to Legba <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-1 is allotted the Sarkonian Mesh-Tag 0001 (matching the primordial click of Tzikvik cipher-shamanism) <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-1 Lemurs</h3>
+      <ul>
+        <li>[M#00] 1::0 Lurgo <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    2: `
+      <h2>Zone Two</h2>
+      <h3>The Numeral 2</h3>
+      <p>The figure two (2) is quasisymmetric with the figure five (5) <span class="citation">[cite: 1]</span>. This pairing is echoed in the alphabet by the letters ‘Z' and ‘S' (whose shared consistency across case and phonetic coherence has been taken by figural grammarians as indicative of a zygophidian - or ‘forked-tongue' - cultural source) <span class="citation">[cite: 1]</span>.</p>
+      <p>The figure ‘2' designates the number two, the first and definitive even number, and the first prime (second prime = 3) <span class="citation">[cite: 1]</span>. Two digitally cumulates to three <span class="citation">[cite: 1]</span>. Numeric Keypad direction: South <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Second Planet: Venus</h3>
+      <p>Venus (or Sol-2) has a mean orbital distance from sun of 108.2 million km <span class="citation">[cite: 1]</span>. The Venusian year is approx. 224.4 Earth days in length <span class="citation">[cite: 1]</span>. Since the rotation of Venus is very slow (and also retrograde) a Venusian day (lasting 243 Earth-days) is longer than its year <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Venus is astrozygonomously paired with Uranus <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-2 is the second of the six Torque-region Zones of the Numogram <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-7 <span class="citation">[cite: 1]</span>. This 7+2 Syzygy is carried by the demon Oddubb <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-2 both initiates and envelops the Second-Phase of Pandemonium (including 4 impulse-entities) <span class="citation">[cite: 1]</span>. As initiator it functions as the Second Door, invoked by K-goth cults as the "Main Lo-Way" into the Crypt <span class="citation">[cite: 1]</span>. Muvian sorcery identifies this door with the amphidemon (and imp of the first degree) Duoddod (2::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-2 is allotted the Sarkonian Mesh-Tag 0003 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-2 with crypt-navigation, occulted cyberspace and the spectral / liminal populations of hallucination and time fragmentation (greys, ghosts and zombies) <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-2 Lemurs</h3>
+      <ul>
+        <li>[M#01] 2::0 Duoddod <span class="citation">[cite: 1]</span></li>
+        <li>[M#02] 2::1 Doogu <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    3: `
+      <h2>Zone Three</h2>
+      <h3>The Numeral 3</h3>
+      <p>The figure three (3) is semi-iconic (incorporating a stack of three horizontal strokes) <span class="citation">[cite: 1]</span>. It is quasisymmetric with the (upper-case) letter ‘E,' and partially echoed in the figure ‘8' (designating the third power of two) <span class="citation">[cite: 1]</span>.</p>
+      <p>The figure ‘3' designates the number three, the second odd number (with odditude of 1), and second prime (third prime = 5) <span class="citation">[cite: 1]</span>. Three is the square-root of nine (relating it intimately to Barkerian arithmetic and Zygonovism) <span class="citation">[cite: 1]</span>. Three digitally cumulates to six <span class="citation">[cite: 1]</span>. Numeric Keypad direction: South-East <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Third Planet: Earth</h3>
+      <p>Earth (or Sol-3) has a mean orbital distance from the sun of approx. 149 600 000 km, defining the standard Astronomical Unit (AU) <span class="citation">[cite: 1]</span>. The Earth has one moon - Luna - of abnormal size relative to that of the planet, and exercizing considerable influence, principally through tidal forces <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork the Earth is astrozygonomously paired with Saturn <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-3 is the first of the two Warp-region Zones of the Numogram, and Tractor-Zone of the 6-3 (or 'Warp') Current <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-6 <span class="citation">[cite: 1]</span>. This 6+3 Syzygy is carried by the demon Djynxx <span class="citation">[cite: 1]</span>. Zone-3 provides the terminus for two channels, one each from the Torque (the 2nd), and the Warp (the 6th) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-3 both initiates and envelops the Third-Phase of Pandemonium (including 8 impulse-entities) <span class="citation">[cite: 1]</span>. In the first of these aspects it functions as the Third Door, which opens onto the Swirl, and is attributed by Muvian sorcery to the chaotic xenodemon (and imp of the first degree) Ixix (3::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-3 is allotted the Sarkonian Mesh-Tag 0007 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-3 with swirling nebulae (cosmic dust clouds) and alien pattern <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-3 Lemurs</h3>
+      <ul>
+        <li>[M#-03] 3::0 Ixix <span class="citation">[cite: 1]</span></li>
+        <li>[M#-04] 3::1 Ixigool <span class="citation">[cite: 1]</span></li>
+        <li>[M#-05] 3::2 Ixidod <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    4: `
+      <h2>Zone Four</h2>
+      <h3>The Numeral 4</h3>
+      <p>There are two basic versions of the figure, one ‘open' and the other closed into a triangle <span class="citation">[cite: 1]</span>. The figure ‘4' designates the number four, the second even number, and first non-prime (or complex) natural number, with prime factors of 2 x 2 <span class="citation">[cite: 1]</span>.</p>
+      <p>The triangular summation - or digital cumulation - of four equals ten (numerologically identified with a superior power of unity, classically conceived as the pythagorean Tetrakys) <span class="citation">[cite: 1]</span>. Numeric Keypad direction: West <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Fourth Planet: Mars</h3>
+      <p>Mars (or Sol-4) has a mean orbital distance from the sun of approx. 228 000 000 km <span class="citation">[cite: 1]</span>. The Martian year is roughly twice as long as that of Earth, and its day about 30 minutes longer <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Mars is astrozygonomously paired Jupiter <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-4 is the third of the six Torque-region Zones of the Numogram <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-5 <span class="citation">[cite: 1]</span>. The 5+4 Syzygy is carried by the demon Katak <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-4 both initiates and envelops the Fourth-Phase of Pandemonium (including 16 impulse-entities) <span class="citation">[cite: 1]</span>. In its initiatory aspect Zone-4 functions as the Fourth Door (or 'Time-Delta,' familiar from variations of the Kurtz-mythos as 'the worst place in the world') <span class="citation">[cite: 1]</span>. Muvian sorcery attributes this door to the amphidemon (and imp of the first degree) Krako (4::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-4 is allotted the Sarkonian Mesh-Tag 0015 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-4 with ‘delta-phase’ or terminal deliria (Kurtz/Curtis end-of-the-river disintegration into malarial nightmares), geoconvulsions, continental subsidence, and ‘red-out.’ <span class="citation">[cite: 1]</span></p>
+
+      <h3>Phase-4 Lemurs</h3>
+      <ul>
+        <li>[M#06] 4::0 Krako <span class="citation">[cite: 1]</span></li>
+        <li>[M#07] 4::1 Sukugool <span class="citation">[cite: 1]</span></li>
+        <li>[M#08] 4::2 Skoodu <span class="citation">[cite: 1]</span></li>
+        <li>[M#09] 4::3 Skarkix <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    5: `
+      <h2>Zone Five</h2>
+      <h3>The Numeral 5</h3>
+      <p>The figure five (5) - echoed by the (upper-case) letter ‘S' - is of the ophidian-symmetric type <span class="citation">[cite: 1]</span>. The figure ‘5' designates the number five, the third odd number (with odditude of 2), and the third prime (fifth prime = 11) <span class="citation">[cite: 1]</span>.</p>
+      <p>Five digitally cumulates to fifteen <span class="citation">[cite: 1]</span>. Numeric Keypad direction: Centre <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Fifth Planet: Jupiter</h3>
+      <p>Jupiter (or Sol-5) has a mean orbital distance from the sun of approx. 778 330 000 km <span class="citation">[cite: 1]</span>. Jupiter is the innermost gas-giant, and by far the largest planet in the Solar-system, accounting on its own for more than two-thirds of total planetary mass <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Jupiter is astrozygonomously paired with Mars <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-5 is the sixth of the six Torque-region Zones of the Numogram, and Tractor-Zone of the 7-2 (or 'Hold') Current <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-4 <span class="citation">[cite: 1]</span>. This 5+4 Syzygy (carried by the demon Katak) draws the innermost curve of the Barker-spiral, with Zone-5 itself marking its central and terminal node (or 'inner-eye') <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-5 both initiates and envelops the Fifth-Phase of Pandemonium (including 32 impulse-entities) <span class="citation">[cite: 1]</span>. In its initiatory aspect Zone-5 functions as the Fifth (or Hyperborean) Door, attributed by Muvian sorcery to the amphidemon (and imp of the first degree) Tokhatto (5::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-5 is allotted the Sarkonian Mesh-Tag 0031 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-5 with Hyperborean or Wendigo mythology <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-5 Lemurs</h3>
+      <ul>
+        <li>[M#10] 5::0 Tokhatto <span class="citation">[cite: 1]</span></li>
+        <li>[M#11] 5::1 Tukkamu <span class="citation">[cite: 1]</span></li>
+        <li>[M#12] 5::2 Kuttadid <span class="citation">[cite: 1]</span></li>
+        <li>[M#13] 5::3 Tikkitix <span class="citation">[cite: 1]</span></li>
+        <li>[M#14] 5::4 Katak <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    6: `
+      <h2>Zone Six</h2>
+      <h3>The Numeral 6</h3>
+      <p>The figure six (6) is rotationally equivalent to the numeral ‘9' (the two figures together composing a system of twin-spirals) <span class="citation">[cite: 1]</span>. The figure ‘6' designates the number six, third even number, and second non-prime (with prime-factors 2 and 3) <span class="citation">[cite: 1]</span>.</p>
+      <p>Six is the first ‘perfect' number, equivalent to the sum of its factors (1, 2, and 3), and revered as such by Pythagoras <span class="citation">[cite: 1]</span>. Six digitally cumulates to twenty-one <span class="citation">[cite: 1]</span>. Numeric Keypad direction: East <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Sixth Planet: Saturn</h3>
+      <p>Saturn (or Sol-6) has a mean orbital distance from the sun of approx. 1 429 400 000 km <span class="citation">[cite: 1]</span>. The Saturnian ring-system is divided into seven major bands (labelled D, C, B, A, F, G, E since Huygens), and actually consists of more than 100 000 component rings <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Saturn is astrozygonomously paired with Earth <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-6 is the second of the two Warp-region Zones of the Numogram <span class="citation">[cite: 1]</span>. Its Warp-complement and Syzygetic-twin is Zone-3 <span class="citation">[cite: 1]</span>. It is this 6+3 Syzygy (carried by the demon Djynxx) which draws the 'Ulterior Vortex' of Outer-Time <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-6 both initiates and envelops the Sixth-Phase of Pandemonium (including 64 impulse-entities) <span class="citation">[cite: 1]</span>. As initiator, Zone-6 corresponds to the Sixth Door <span class="citation">[cite: 1]</span>. Muvian sorcery attributes this door - which it names Undu - to the terrible chaotic xenodemon (and imp of the first degree) Tchu (6::0), primordially associated with shocking disappearances <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-6 is allotted the Sarkonian Mesh-Tag 0063 (a fact of obvious importance to the culture of Tzikvik cipher-shamanism) <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-6 with the occulted dimensions of Undu, turbular erosion and the dead eye of the cyclone <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-6 Lemurs</h3>
+      <ul>
+        <li>[M#-15] 6::0 Tchu <span class="citation">[cite: 1]</span></li>
+        <li>[M#-16] 6::1 Djungo <span class="citation">[cite: 1]</span></li>
+        <li>[M#-17] 6::2 Djuddha <span class="citation">[cite: 1]</span></li>
+        <li>[M#-18] 6::3 Djynxx <span class="citation">[cite: 1]</span></li>
+        <li>[M#-19] 6::4 Tchakki <span class="citation">[cite: 1]</span></li>
+        <li>[M#-20] 6::5 Tchattuk <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    7: `
+      <h2>Zone Seven</h2>
+      <h3>The Numeral 7</h3>
+      <p>The figure seven (7) includes the only pure diagonal to be found amongst the numeral figures <span class="citation">[cite: 1]</span>. The figure ‘7' designates the number seven, the fourth odd number (with odditude of one), and the fourth prime (seventh prime = 17) <span class="citation">[cite: 1]</span>.</p>
+      <p>Seven digitally cumulates to twenty-eight <span class="citation">[cite: 1]</span>. Numeric Keypad direction: North-West <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Seventh Planet: Uranus</h3>
+      <p>Uranus (or Sol-7) has a mean orbital distance from the sun of approx. 2 870 990 000 km <span class="citation">[cite: 1]</span>. The rotation of Uranus is abnormally tilted, and is almost perpendicular to the ecliptic, warping its magnetic field <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Uranus is astrozygonomously paired with Venus <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-7 is the fifth of the six Torque-region Zones of the Numogram, and Tractor-Zone of the 8-1 (or 'Surge') Current <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-2 <span class="citation">[cite: 1]</span>. The 7+2 Syzygy is carried by the demon Oddubb, whose associations with hyperstitious doublings reinforces its twin character <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-7 both initiates and envelops the Seventh-Phase of Pandemonium (including 128 impulse-entities) <span class="citation">[cite: 1]</span>. In its initiatory aspect - as the Seventh Door - Zone-7 opens onto the cosmic swamp-labyrinths or 'Tracts of Dobo.' <span class="citation">[cite: 1]</span> Muvian sorcery attributes this door to the amphidemon (and imp of the first degree) Puppo (7::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-7 is allotted the Sarkonian Mesh-Tag 0127 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-7 with emergence from the depths (hyper-sea water-carriers and amphibious colonization) <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-7 Lemurs</h3>
+      <ul>
+        <li>[M#21] 7::0 Puppo <span class="citation">[cite: 1]</span></li>
+        <li>[M#22] 7::1 Bubbamu <span class="citation">[cite: 1]</span></li>
+        <li>[M#23] 7::2 Oddubb <span class="citation">[cite: 1]</span></li>
+        <li>[M#24] 7::3 Pabbakis <span class="citation">[cite: 1]</span></li>
+        <li>[M#25] 7::4 Ababbatok <span class="citation">[cite: 1]</span></li>
+        <li>[M#26] 7::5 Papatakoo <span class="citation">[cite: 1]</span></li>
+        <li>[M#27] 7::6 Bobobja <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    8: `
+      <h2>Zone Eight</h2>
+      <h3>The Numeral 8</h3>
+      <p>The figure eight (8) is a partially rotated glyph of infinity, and also of the Moebian strip <span class="citation">[cite: 1]</span>. The figure ‘8' designates the number eight, the fourth even number, and the third non-prime (with prime factors 2 x 2 x 2) <span class="citation">[cite: 1]</span>.</p>
+      <p>Eight digitally cumulates to thirty-six <span class="citation">[cite: 1]</span>. Numeric Keypad direction: North <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Eighth Planet: Neptune</h3>
+      <p>Neptune (or Sol-8) is the outermost gas-giant, with a mean orbital distance from the sun of approx. 4 504 000 000 km <span class="citation">[cite: 1]</span>. Due to eccentricities in the orbit of Pluto it is periodically the outermost (ninth) planet <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Neptune is astrozygonomously paired with Mercury <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-8 is the fourth of the six Torque-region Zones of the Numogram <span class="citation">[cite: 1]</span>. Its Syzygetic-twin is Zone-1 <span class="citation">[cite: 1]</span>. The 8+1 Syzygy is carried by the demon Murmur (known to Muvian sorcerors as 'the nethermost denizen of time') <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-8 both initiates and envelops the Eighth-Phase of Pandemonium (including 256 impulse-entities) <span class="citation">[cite: 1]</span>. In its initiatory aspect - as the Eighth Door - Zone-8 is problematically identifiable with the Muvian amphidemon (and imp of the first degree) Minommo (8::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-8 is allotted the Sarkonian Mesh-Tag 0255 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-8 with limbic drift, dreams, trance-states and foetal sentience <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-8 Lemurs</h3>
+      <ul>
+        <li>[M#28] 8::0 Minommo <span class="citation">[cite: 1]</span></li>
+        <li>[M#29] 8::1 Murrumur <span class="citation">[cite: 1]</span></li>
+        <li>[M#30] 8::2 Nammamad <span class="citation">[cite: 1]</span></li>
+        <li>[M#31] 8::3 Mummumix <span class="citation">[cite: 1]</span></li>
+        <li>[M#32] 8::4 Numko <span class="citation">[cite: 1]</span></li>
+        <li>[M#33] 8::5 Muntuk <span class="citation">[cite: 1]</span></li>
+        <li>[M#34] 8::6 Mommoljo <span class="citation">[cite: 1]</span></li>
+        <li>[M#35] 8::7 Mombbo <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `,
+    9: `
+      <h2>Zone Nine</h2>
+      <h3>The Numeral 9</h3>
+      <p>The figure nine (9) is zygospirally related to the figure six (6) <span class="citation">[cite: 1]</span>. The figure ‘9' designates the number nine, the fifth odd number (with odditude of three), and the fourth non-prime (with prime factors 3 x 3) <span class="citation">[cite: 1]</span>.</p>
+      <p>Nine digitally cumulates to forty-five <span class="citation">[cite: 1]</span>. Numeric Keypad direction: North-East <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>The Ninth Planet: Pluto</h3>
+      <p>Pluto (or Sol-9) has the most highly elliptical orbital trajectory of any planet in the Solar-system, with a (highly variable) mean orbital distance from the sun of approx. 5 913 520 000 km <span class="citation">[cite: 1]</span>. Pluto was not discovered until 1930 <span class="citation">[cite: 1]</span>.</p>
+      <p>In Lemurian Planetwork Pluto is astrozygonomously paired with the Sun <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>System Notes</h3>
+      <p>Zone-9 is the second of the two zones mutually composing the Plex-region of the Numogram, and Tractor-Zone for the 9-0 (or 'Plex') current <span class="citation">[cite: 1]</span>. Its Plex-complement and Syzygetic-twin is Zone-0 <span class="citation">[cite: 1]</span>. This 9+0 Syzygy (carried by the demon Uttunul) draws the outermost curve of the Barker-spiral, which coincides with the limit ordinal-span in Barkerian arithmetic <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-9 both initiates and envelops the Ninth-Phase of Pandemonium (including 512 impulse-entities, one half of the fully disorganized population) <span class="citation">[cite: 1]</span>. In the first of these aspects it functions as the Ninth (or Ultimate) Door, which degenerated Muvian sorceries identify with the syzygetic xenodemon (and imp of the first degree) Uttunul (9::0) <span class="citation">[cite: 1]</span>.</p>
+      <p>Zone-9 is allotted the Sarkonian Mesh-Tag 0511 <span class="citation">[cite: 1]</span>. Lemurian subcultures associate Zone-9 with the Cthellloid metallic ocean of the earth’s iron core <span class="citation">[cite: 1]</span>.</p>
+
+      <h3>Phase-9 Lemurs</h3>
+      <ul>
+        <li>[M#36] 9::0 Uttunul <span class="citation">[cite: 1]</span></li>
+        <li>[M#37] 9::1 Tuttagool <span class="citation">[cite: 1]</span></li>
+        <li>[M#38] 9::2 Unnunddo <span class="citation">[cite: 1]</span></li>
+        <li>[M#39] 9::3 Ununuttix <span class="citation">[cite: 1]</span></li>
+        <li>[M#40] 9::4 Unnunaka <span class="citation">[cite: 1]</span></li>
+        <li>[M#41] 9::5 Tukutu <span class="citation">[cite: 1]</span></li>
+        <li>[M#42] 9::6 Unnutchi <span class="citation">[cite: 1]</span></li>
+        <li>[M#43] 9::7 Nuttubab <span class="citation">[cite: 1]</span></li>
+        <li>[M#44] 9::8 Ummnu <span class="citation">[cite: 1]</span></li>
+      </ul>
+    `
+  };
+
+  const infoPanel = document.getElementById('info-panel');
+  
+  // Set default state
+  infoPanel.innerHTML = introData;
+
+  function showZone(zoneNum) {
+    if (zoneData[zoneNum]) {
+      infoPanel.innerHTML = zoneData[zoneNum];
+    }
+  }
+</script>
+
 </body>
 </html>
