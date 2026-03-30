@@ -1,10 +1,11 @@
-const CACHE_NAME = 'cop-usd-cache-v2';
+const CACHE_NAME = 'cop-usd-cache-v3';
 
-// Fix 1: Removed icon.svg and icon-192.png from here. No external images!
+// The icon MUST be in this list and the name must match exactly
 const ASSETS = [
     './',
     './index.html',
-    './manifest.json'
+    './manifest.json',
+    './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -26,13 +27,10 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // Fix 2: Bypass Service Worker for API calls. 
-    // This allows your HTML's fetch().catch() block to actually detect when the user is offline!
     if (event.request.url.includes('api') || event.request.url.includes('exchangerate')) {
         return; 
     }
 
-    // Cache-First strategy for the HTML and Manifest files
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
             return cachedResponse || fetch(event.request);
