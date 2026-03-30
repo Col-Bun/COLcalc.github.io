@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COP ↔ USD Calculator</title>
+    
     <link rel="manifest" href="manifest.json">
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💵</text></svg>">
+    <link rel="icon" type="image/png" href="./icon-512.png">
+    <link rel="apple-touch-icon" href="./icon-512.png">
     
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: auto; }
@@ -31,16 +33,13 @@
         const badge = document.getElementById('offline-badge');
         const rateDisplay = document.getElementById('rate-display');
 
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
                 .then(() => console.log("Service Worker Registered"))
                 .catch(err => console.error("SW Registration failed", err));
         }
 
-        // Fetch Rate Logic
         function fetchRate() {
-            // Replace this URL with your actual exchange rate API endpoint
             fetch('https://open.er-api.com/v6/latest/USD') 
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
@@ -50,15 +49,14 @@
                     exchangeRate = data.rates.COP;
                     localStorage.setItem('saved_cop_rate', exchangeRate);
                     rateDisplay.innerText = `1 USD = ${exchangeRate} COP`;
-                    badge.style.display = 'none'; // Hide badge if online
+                    badge.style.display = 'none'; 
                 })
                 .catch(error => {
-                    // Fix 2: Because the SW no longer intercepts the API, this block will successfully trigger when offline
                     const savedRate = localStorage.getItem('saved_cop_rate');
                     if (savedRate) {
                         exchangeRate = parseFloat(savedRate);
                         rateDisplay.innerText = `1 USD = ${exchangeRate} COP`;
-                        badge.style.display = 'inline-block'; // Show offline badge
+                        badge.style.display = 'inline-block'; 
                     } else {
                         rateDisplay.innerText = 'Offline - No saved rate available';
                     }
